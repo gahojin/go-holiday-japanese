@@ -1,4 +1,4 @@
-module github.com/gahojin/holiday-japanese-go
+module github.com/gahojin/go-holiday-japanese
 
 go 1.21
 

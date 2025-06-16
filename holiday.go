@@ -6,7 +6,7 @@ import (
 	_ "embed"
 	"encoding/gob"
 	"fmt"
-	"github.com/gahojin/holiday-japanese-go/internal"
+	"github.com/gahojin/go-holiday-japanese/internal"
 	"time"
 )
 

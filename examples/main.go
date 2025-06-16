@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gahojin/holiday-japanese-go"
+	"github.com/gahojin/go-holiday-japanese"
 	"time"
 )
 

@@ -1,4 +1,4 @@
-# holiday-japanese-go
+# go-holiday-japanese
 
 日本の祝日判定ユーティリティ for Go
 
