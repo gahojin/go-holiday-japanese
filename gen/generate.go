@@ -6,8 +6,8 @@ import (
 	"compress/gzip"
 	"encoding/gob"
 	"fmt"
-	"github.com/gahojin/go-holiday-japanese"
 	"github.com/gahojin/go-holiday-japanese/internal"
+	"github.com/gahojin/go-holiday-japanese/model"
 	"gopkg.in/yaml.v3"
 	"io"
 	"os"
@@ -76,19 +76,23 @@ func parse(filename string) ([]HolidayDetail, error) {
 }
 
 // generate code from template and master data.
-func generate(data *holiday.StoreData, w io.Writer) error {
-	gzipWriter := gzip.NewWriter(w)
+func generate(data *internal.StoreData, w io.Writer) error {
+	gzipWriter, err := gzip.NewWriterLevel(w, gzip.BestCompression)
+	if err != nil {
+		return err
+	}
 	defer gzipWriter.Close()
 
 	encoder := gob.NewEncoder(gzipWriter)
 	return encoder.Encode(data)
 }
 
-func convert(dataset []HolidayDetail) *holiday.StoreData {
+func convert(dataset []HolidayDetail) *internal.StoreData {
 	nameToIndexMap := make(map[string]uint8)
-	names := make([]holiday.Name, 0)
-	mapping := make([]holiday.Mapping, 0, len(dataset))
+	names := make([]model.Name, 0)
+	mapping := make([]internal.StoreMapping, 0, len(dataset))
 
+	prevDay := uint(0)
 	for _, info := range dataset {
 		date := info.Date
 		nameJa := info.Name
@@ -98,20 +102,25 @@ func convert(dataset []HolidayDetail) *holiday.StoreData {
 		index, ok := nameToIndexMap[key]
 		if !ok {
 			index = uint8(len(names))
-			names = append(names, holiday.Name{
+			names = append(names, model.Name{
 				Ja: nameJa,
 				En: nameEn,
 			})
 			nameToIndexMap[key] = index
 		}
-		epochDay := internal.ToEpochDay(date)
-		mapping = append(mapping, holiday.Mapping{
-			Day:   epochDay,
+		epochDay, ok := internal.ToEpochDay(date)
+		if !ok {
+			panic(fmt.Sprintf("invalid date: %v", date))
+		}
+		diff := epochDay - prevDay
+		prevDay = epochDay
+		mapping = append(mapping, internal.StoreMapping{
+			Diff:  uint8(diff),
 			Index: index,
 		})
 	}
 
-	return &holiday.StoreData{
+	return &internal.StoreData{
 		Names:   names,
 		Mapping: mapping,
 	}

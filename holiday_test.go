@@ -2,6 +2,7 @@ package holiday
 
 import (
 	"fmt"
+	"github.com/gahojin/go-holiday-japanese/model"
 	holidayjp "github.com/holiday-jp/holiday_jp-go"
 	"github.com/stretchr/testify/assert"
 	"sort"
@@ -135,21 +136,21 @@ func TestGetHolidayName(t *testing.T) {
 func TestBetween(t *testing.T) {
 	// 境界チェック
 	assert.Empty(t, Between(t20250102, t20250112))
-	assert.Equal(t, []Holiday{
-		{Date: t20250101, Name: Name{Ja: "元日", En: "New Year's Day"}},
+	assert.Equal(t, []model.Holiday{
+		{Date: t20250101, Name: model.Name{Ja: "元日", En: "New Year's Day"}},
 	}, Between(t20250101, t20250112))
-	assert.Equal(t, []Holiday{
-		{Date: t20250113, Name: Name{Ja: "成人の日", En: "Coming of Age Day"}},
+	assert.Equal(t, []model.Holiday{
+		{Date: t20250113, Name: model.Name{Ja: "成人の日", En: "Coming of Age Day"}},
 	}, Between(t20250113, t20250131))
-	assert.Equal(t, []Holiday{
-		{Date: t20250113, Name: Name{Ja: "成人の日", En: "Coming of Age Day"}},
+	assert.Equal(t, []model.Holiday{
+		{Date: t20250113, Name: model.Name{Ja: "成人の日", En: "Coming of Age Day"}},
 	}, Between(t20250111, t20250131))
-	assert.Equal(t, []Holiday{
-		{Date: t20250101, Name: Name{Ja: "元日", En: "New Year's Day"}},
+	assert.Equal(t, []model.Holiday{
+		{Date: t20250101, Name: model.Name{Ja: "元日", En: "New Year's Day"}},
 	}, Between(t20250101, t20250101))
-	assert.Equal(t, []Holiday{
-		{Date: t19700101, Name: Name{Ja: "元日", En: "New Year's Day"}},
-		{Date: t19700115, Name: Name{Ja: "成人の日", En: "Coming of Age Day"}},
+	assert.Equal(t, []model.Holiday{
+		{Date: t19700101, Name: model.Name{Ja: "元日", En: "New Year's Day"}},
+		{Date: t19700115, Name: model.Name{Ja: "成人の日", En: "Coming of Age Day"}},
 	}, Between(t19700101, t19700115))
 	assert.Empty(t, Between(t20240230, t20240301))
 }
@@ -163,15 +164,15 @@ func TestCompatibility(t *testing.T) {
 		holidayJp := holidayjp.Between(s, e)
 
 		// 比較
-		holidayJpList := make([]Holiday, len(thisLibrary))
+		holidayJpList := make([]model.Holiday, len(thisLibrary))
 		index := 0
 		for key, value := range holidayJp {
 			// holiday-jpのHoliday.Date関数は動作しないため、keyから日付パース
 			date, err := time.Parse(time.DateOnly, key)
 			assert.NoError(t, err)
-			holidayJpList[index] = Holiday{
+			holidayJpList[index] = model.Holiday{
 				Date: date,
-				Name: Name{
+				Name: model.Name{
 					Ja: value.Name(),
 					En: value.NameEn(),
 				},
