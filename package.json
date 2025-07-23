@@ -10,11 +10,5 @@
     "lefthook": "1.12.2",
     "npm-check-updates": "18.0.1"
   },
-  "packageManager": "pnpm@10.12.1",
-  "engines": {
-    "node": ">=20.x",
-    "npm": "use pnpm",
-    "pnpm": ">=10",
-    "yarn": "use pnpm"
-  }
+  "packageManager": "pnpm@10.13.1"
 }
