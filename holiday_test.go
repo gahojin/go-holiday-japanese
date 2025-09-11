@@ -2,12 +2,13 @@ package holiday
 
 import (
 	"fmt"
-	"github.com/gahojin/go-holiday-japanese/model"
-	holidayjp "github.com/holiday-jp/holiday_jp-go"
-	"github.com/stretchr/testify/assert"
 	"sort"
 	"testing"
 	"time"
+
+	"github.com/gahojin/go-holiday-japanese/model"
+	holidayjp "github.com/holiday-jp/holiday_jp-go"
+	"github.com/stretchr/testify/assert"
 )
 
 var (

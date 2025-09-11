@@ -2,9 +2,10 @@ package holiday
 
 import (
 	_ "embed"
+	"time"
+
 	"github.com/gahojin/go-holiday-japanese/internal"
 	"github.com/gahojin/go-holiday-japanese/model"
-	"time"
 )
 
 var (
