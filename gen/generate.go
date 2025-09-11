@@ -6,14 +6,15 @@ import (
 	"compress/gzip"
 	"encoding/gob"
 	"fmt"
-	"github.com/gahojin/go-holiday-japanese/internal"
-	"github.com/gahojin/go-holiday-japanese/model"
-	"gopkg.in/yaml.v3"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"time"
+
+	"github.com/gahojin/go-holiday-japanese/internal"
+	"github.com/gahojin/go-holiday-japanese/model"
+	"gopkg.in/yaml.v3"
 )
 
 type HolidayDetail struct {

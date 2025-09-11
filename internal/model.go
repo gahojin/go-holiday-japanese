@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/gob"
 	"fmt"
+
 	"github.com/gahojin/go-holiday-japanese/model"
 )
 

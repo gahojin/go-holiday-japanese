@@ -1,6 +1,8 @@
 module github.com/gahojin/go-holiday-japanese
 
-go 1.21
+go 1.22
+
+toolchain go1.25.1
 
 require (
 	github.com/holiday-jp/holiday_jp-go v0.0.0-20220125203534-53124b4cc19c

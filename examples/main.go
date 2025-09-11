@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/gahojin/go-holiday-japanese"
 	"time"
+
+	"github.com/gahojin/go-holiday-japanese"
 )
 
 const (
