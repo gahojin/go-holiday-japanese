@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	//go:embed dataset.gob.gz
+	//go:embed dataset.gob
 	rawDataset []byte
 
 	dataset = decodeDatasetCached()

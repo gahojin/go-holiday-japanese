@@ -3,7 +3,7 @@
 package main
 
 import (
-	"compress/gzip"
+	"bufio"
 	"encoding/gob"
 	"fmt"
 	"io"
@@ -27,7 +27,7 @@ type Holidays map[string]HolidayDetail
 
 func main() {
 	src := filepath.Join("..", "dataset", "holidays_detailed.yml")
-	out := filepath.Join("..", "dataset.gob.gz")
+	out := filepath.Join("..", "dataset.gob")
 
 	dataset, err := parse(src)
 	if err != nil {
@@ -78,13 +78,10 @@ func parse(filename string) ([]HolidayDetail, error) {
 
 // generate code from template and master data.
 func generate(data *internal.StoreData, w io.Writer) error {
-	gzipWriter, err := gzip.NewWriterLevel(w, gzip.BestCompression)
-	if err != nil {
-		return err
-	}
-	defer gzipWriter.Close()
+	writer := bufio.NewWriter(w)
+	defer writer.Flush()
 
-	encoder := gob.NewEncoder(gzipWriter)
+	encoder := gob.NewEncoder(writer)
 	return encoder.Encode(data)
 }
 

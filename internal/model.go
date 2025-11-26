@@ -58,15 +58,11 @@ func (m *StoreMapping) GobDecode(data []byte) error {
 }
 
 func DecodeDataset(rawDataset []byte) (*ParsedData, error) {
-	gzipReader, err := gzip.NewReader(bytes.NewReader(rawDataset))
-	if err != nil {
-		return nil, fmt.Errorf("failed to decompress dataset: %w", err)
-	}
+	reader := bytes.NewReader(rawDataset)
+	decoder := gob.NewDecoder(reader)
 
 	var data StoreData
-	decoder := gob.NewDecoder(gzipReader)
-	err = decoder.Decode(&data)
-	if err != nil {
+	if err := decoder.Decode(&data); err != nil {
 		return nil, fmt.Errorf("failed to decode dataset: %w", err)
 	}
 
