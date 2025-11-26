@@ -1,9 +1,6 @@
 package internal
 
 import (
-	"bytes"
-	"encoding/binary"
-	"encoding/gob"
 	"fmt"
 )
 
@@ -28,47 +25,13 @@ type ParsedData struct {
 	Mapping  []Mapping
 }
 
-func (m *StoreMapping) GobEncode() ([]byte, error) {
-	buf := bytes.NewBuffer(nil)
-	err := binary.Write(buf, binary.LittleEndian, m.Diff)
-	if err != nil {
-		return nil, err
-	}
-	err = binary.Write(buf, binary.LittleEndian, m.Index)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
-func (m *StoreMapping) GobDecode(data []byte) error {
-	buf := bytes.NewReader(data)
-	err := binary.Read(buf, binary.LittleEndian, &m.Diff)
-	if err != nil {
-		return err
-	}
-	err = binary.Read(buf, binary.LittleEndian, &m.Index)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func DecodeDataset(rawDataset []byte) (*ParsedData, error) {
-	reader := bytes.NewReader(rawDataset)
-	decoder := gob.NewDecoder(reader)
-
-	var data StoreData
-	if err := decoder.Decode(&data); err != nil {
-		return nil, fmt.Errorf("failed to decode dataset: %w", err)
-	}
-
-	namesLen := len(data.Names)
-	mappingLen := len(data.Mapping)
-	mappings := make([]Mapping, mappingLen)
+func ConvertDataset(names []string, mappings []StoreMapping) (*ParsedData, error) {
+	namesLen := len(names)
+	mappingLen := len(mappings)
+	results := make([]Mapping, mappingLen)
 	holidays := make(map[uint]int, mappingLen)
 	day := uint(0)
-	for i, mapping := range data.Mapping {
+	for i, mapping := range mappings {
 		index := int(mapping.Index)
 		// 名称インデックスのチェック
 		if index >= namesLen {
@@ -77,14 +40,14 @@ func DecodeDataset(rawDataset []byte) (*ParsedData, error) {
 
 		day += uint(mapping.Diff)
 		holidays[day] = index
-		mappings[i] = Mapping{
+		results[i] = Mapping{
 			Day:   day,
 			Index: index,
 		}
 	}
 	return &ParsedData{
-		Names:    data.Names,
+		Names:    names,
 		Holidays: holidays,
-		Mapping:  mappings,
+		Mapping:  results,
 	}, nil
 }

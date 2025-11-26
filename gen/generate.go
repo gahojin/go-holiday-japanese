@@ -4,12 +4,12 @@ package main
 
 import (
 	"bufio"
-	"encoding/gob"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
+	"text/template"
 	"time"
 
 	"github.com/gahojin/go-holiday-japanese/internal"
@@ -26,7 +26,7 @@ type Holidays map[string]HolidayDetail
 
 func main() {
 	src := filepath.Join("..", "dataset", "holidays_detailed.yml")
-	out := filepath.Join("..", "dataset.gob")
+	out := filepath.Join("..", "dataset.go")
 
 	dataset, err := parse(src)
 	if err != nil {
@@ -80,8 +80,11 @@ func generate(data *internal.StoreData, w io.Writer) error {
 	writer := bufio.NewWriter(w)
 	defer writer.Flush()
 
-	encoder := gob.NewEncoder(writer)
-	return encoder.Encode(data)
+	tmpl, err := template.ParseFiles("dataset.tpl")
+	if err != nil {
+		return err
+	}
+	return tmpl.Execute(writer, data)
 }
 
 func convert(dataset []HolidayDetail) *internal.StoreData {
@@ -112,10 +115,7 @@ func convert(dataset []HolidayDetail) *internal.StoreData {
 		}
 		diff := epochDay - prevDay
 		prevDay = epochDay
-		mapping = append(mapping, internal.StoreMapping{
-			Diff:  uint8(diff),
-			Index: index,
-		})
+		mapping = append(mapping, internal.StoreMapping{Diff: uint8(diff), Index: index})
 	}
 
 	return &internal.StoreData{

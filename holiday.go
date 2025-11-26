@@ -9,14 +9,11 @@ import (
 )
 
 var (
-	//go:embed dataset.gob
-	rawDataset []byte
-
 	dataset = decodeDatasetCached()
 )
 
 func decodeDatasetCached() func() (*internal.ParsedData, error) {
-	data, err := internal.DecodeDataset(rawDataset)
+	data, err := internal.ConvertDataset(holidayNames, holidayMapping)
 	return func() (*internal.ParsedData, error) {
 		return data, err
 	}
