@@ -2,7 +2,7 @@ package holiday
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 	"testing"
 	"time"
 
@@ -181,11 +181,11 @@ func TestCompatibility(t *testing.T) {
 			index++
 		}
 		// mapは日付順ではないため、日付順にソート
-		sort.Slice(holidayJpList, func(i, j int) bool {
-			return holidayJpList[i].Date.Unix() < holidayJpList[j].Date.Unix()
+		slices.SortFunc(holidayJpList, func(a, b model.Holiday) int {
+			return a.Date.Compare(b.Date)
 		})
 
-		assert.Equal(t, thisLibrary, holidayJpList)
+		assert.Equal(t, holidayJpList, thisLibrary)
 
 		year++
 	}

@@ -2,12 +2,9 @@ package internal
 
 import (
 	"bytes"
-	"compress/gzip"
 	"encoding/binary"
 	"encoding/gob"
 	"fmt"
-
-	"github.com/gahojin/go-holiday-japanese/model"
 )
 
 type StoreMapping struct {
@@ -16,7 +13,7 @@ type StoreMapping struct {
 }
 
 type StoreData struct {
-	Names   []model.Name
+	Names   []string
 	Mapping []StoreMapping
 }
 
@@ -26,7 +23,7 @@ type Mapping struct {
 }
 
 type ParsedData struct {
-	Names    []model.Name
+	Names    []string
 	Holidays map[uint]int
 	Mapping  []Mapping
 }

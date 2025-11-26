@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/gahojin/go-holiday-japanese/internal"
-	"github.com/gahojin/go-holiday-japanese/model"
 	"gopkg.in/yaml.v3"
 )
 
@@ -87,7 +86,7 @@ func generate(data *internal.StoreData, w io.Writer) error {
 
 func convert(dataset []HolidayDetail) *internal.StoreData {
 	nameToIndexMap := make(map[string]uint8)
-	names := make([]model.Name, 0)
+	names := make([]string, 0)
 	mapping := make([]internal.StoreMapping, 0, len(dataset))
 
 	prevDay := uint(0)
@@ -99,11 +98,12 @@ func convert(dataset []HolidayDetail) *internal.StoreData {
 		key := fmt.Sprintf("%s##%s", nameJa, nameEn)
 		index, ok := nameToIndexMap[key]
 		if !ok {
-			index = uint8(len(names))
-			names = append(names, model.Name{
-				Ja: nameJa,
-				En: nameEn,
-			})
+			n := len(names)
+			if n > 254 {
+				panic("too many names")
+			}
+			index = uint8(n)
+			names = append(names, nameJa, nameEn)
 			nameToIndexMap[key] = index
 		}
 		epochDay, ok := internal.ToEpochDay(date)
