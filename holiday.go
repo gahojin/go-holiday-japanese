@@ -9,14 +9,11 @@ import (
 )
 
 var (
-	//go:embed dataset.gob.gz
-	rawDataset []byte
-
 	dataset = decodeDatasetCached()
 )
 
 func decodeDatasetCached() func() (*internal.ParsedData, error) {
-	data, err := internal.DecodeDataset(rawDataset)
+	data, err := internal.ConvertDataset(holidayNames, holidayMapping)
 	return func() (*internal.ParsedData, error) {
 		return data, err
 	}
@@ -51,8 +48,7 @@ func GetHolidayName(t time.Time) *model.Name {
 		return nil
 	}
 	names := ds.Names
-	name := names[index]
-	return &model.Name{Ja: name.Ja, En: name.En}
+	return &model.Name{Ja: names[index], En: names[index+1]}
 }
 
 // Between は期間内の祝日情報を返す
@@ -98,10 +94,12 @@ func Between(start, end time.Time) []model.Holiday {
 		if day.Day > epochEndDay {
 			break
 		}
-		name := names[day.Index]
 		ret = append(ret, model.Holiday{
 			Date: internal.FromEpochDay(day.Day),
-			Name: name,
+			Name: model.Name{
+				Ja: names[day.Index],
+				En: names[day.Index+1],
+			},
 		})
 		i++
 	}

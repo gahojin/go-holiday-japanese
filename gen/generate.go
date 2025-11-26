@@ -3,17 +3,16 @@
 package main
 
 import (
-	"compress/gzip"
-	"encoding/gob"
+	"bufio"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
+	"text/template"
 	"time"
 
 	"github.com/gahojin/go-holiday-japanese/internal"
-	"github.com/gahojin/go-holiday-japanese/model"
 	"gopkg.in/yaml.v3"
 )
 
@@ -27,7 +26,7 @@ type Holidays map[string]HolidayDetail
 
 func main() {
 	src := filepath.Join("..", "dataset", "holidays_detailed.yml")
-	out := filepath.Join("..", "dataset.gob.gz")
+	out := filepath.Join("..", "dataset.go")
 
 	dataset, err := parse(src)
 	if err != nil {
@@ -78,19 +77,19 @@ func parse(filename string) ([]HolidayDetail, error) {
 
 // generate code from template and master data.
 func generate(data *internal.StoreData, w io.Writer) error {
-	gzipWriter, err := gzip.NewWriterLevel(w, gzip.BestCompression)
+	writer := bufio.NewWriter(w)
+	defer writer.Flush()
+
+	tmpl, err := template.ParseFiles("dataset.tpl")
 	if err != nil {
 		return err
 	}
-	defer gzipWriter.Close()
-
-	encoder := gob.NewEncoder(gzipWriter)
-	return encoder.Encode(data)
+	return tmpl.Execute(writer, data)
 }
 
 func convert(dataset []HolidayDetail) *internal.StoreData {
 	nameToIndexMap := make(map[string]uint8)
-	names := make([]model.Name, 0)
+	names := make([]string, 0)
 	mapping := make([]internal.StoreMapping, 0, len(dataset))
 
 	prevDay := uint(0)
@@ -102,11 +101,12 @@ func convert(dataset []HolidayDetail) *internal.StoreData {
 		key := fmt.Sprintf("%s##%s", nameJa, nameEn)
 		index, ok := nameToIndexMap[key]
 		if !ok {
-			index = uint8(len(names))
-			names = append(names, model.Name{
-				Ja: nameJa,
-				En: nameEn,
-			})
+			n := len(names)
+			if n > 254 {
+				panic("too many names")
+			}
+			index = uint8(n)
+			names = append(names, nameJa, nameEn)
 			nameToIndexMap[key] = index
 		}
 		epochDay, ok := internal.ToEpochDay(date)
@@ -115,10 +115,7 @@ func convert(dataset []HolidayDetail) *internal.StoreData {
 		}
 		diff := epochDay - prevDay
 		prevDay = epochDay
-		mapping = append(mapping, internal.StoreMapping{
-			Diff:  uint8(diff),
-			Index: index,
-		})
+		mapping = append(mapping, internal.StoreMapping{Diff: uint8(diff), Index: index})
 	}
 
 	return &internal.StoreData{
