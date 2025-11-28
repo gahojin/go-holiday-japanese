@@ -24,6 +24,16 @@ type HolidayDetail struct {
 
 type Holidays map[string]HolidayDetail
 
+type storeMapping struct {
+	Diff  uint8
+	Index uint8
+}
+
+type storeData struct {
+	Names   []string
+	Mapping []storeMapping
+}
+
 func main() {
 	src := filepath.Join("..", "dataset", "holidays_detailed.yml")
 	out := filepath.Join("..", "dataset.go")
@@ -76,7 +86,7 @@ func parse(filename string) ([]HolidayDetail, error) {
 }
 
 // generate code from template and master data.
-func generate(data *internal.StoreData, w io.Writer) error {
+func generate(data *storeData, w io.Writer) error {
 	writer := bufio.NewWriter(w)
 	defer writer.Flush()
 
@@ -87,10 +97,10 @@ func generate(data *internal.StoreData, w io.Writer) error {
 	return tmpl.Execute(writer, data)
 }
 
-func convert(dataset []HolidayDetail) *internal.StoreData {
+func convert(dataset []HolidayDetail) *storeData {
 	nameToIndexMap := make(map[string]uint8)
 	names := make([]string, 0)
-	mapping := make([]internal.StoreMapping, 0, len(dataset))
+	mapping := make([]storeMapping, 0, len(dataset))
 
 	prevDay := uint(0)
 	for _, info := range dataset {
@@ -115,10 +125,10 @@ func convert(dataset []HolidayDetail) *internal.StoreData {
 		}
 		diff := epochDay - prevDay
 		prevDay = epochDay
-		mapping = append(mapping, internal.StoreMapping{Diff: uint8(diff), Index: index})
+		mapping = append(mapping, storeMapping{Diff: uint8(diff), Index: index})
 	}
 
-	return &internal.StoreData{
+	return &storeData{
 		Names:   names,
 		Mapping: mapping,
 	}

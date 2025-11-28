@@ -8,16 +8,7 @@ import (
 	"github.com/gahojin/go-holiday-japanese/model"
 )
 
-var (
-	dataset = decodeDatasetCached()
-)
-
-func decodeDatasetCached() func() (*internal.ParsedData, error) {
-	data, err := internal.ConvertDataset(holidayNames, holidayMapping)
-	return func() (*internal.ParsedData, error) {
-		return data, err
-	}
-}
+var holidays, mapping = internal.ConvertDataset(holidayMapping)
 
 // IsHoliday は指定日が祝日か返す
 func IsHoliday(t time.Time) bool {
@@ -25,11 +16,7 @@ func IsHoliday(t time.Time) bool {
 	if !ok {
 		return false
 	}
-	ds, err := dataset()
-	if err != nil {
-		return false
-	}
-	_, ok = ds.Holidays[epochDay]
+	_, ok = holidays[epochDay]
 	return ok
 }
 
@@ -39,15 +26,11 @@ func GetHolidayName(t time.Time) *model.Name {
 	if !ok {
 		return nil
 	}
-	ds, err := dataset()
-	if err != nil {
-		return nil
-	}
-	index, ok := ds.Holidays[epochDay]
+	index, ok := holidays[epochDay]
 	if !ok {
 		return nil
 	}
-	names := ds.Names
+	names := holidayNames
 	return &model.Name{Ja: names[index], En: names[index+1]}
 }
 
@@ -62,12 +45,7 @@ func Between(start, end time.Time) []model.Holiday {
 		return nil
 	}
 
-	ds, err := dataset()
-	if err != nil {
-		return nil
-	}
-	names := ds.Names
-	mapping := ds.Mapping
+	names := holidayNames
 	mappingLen := len(mapping)
 
 	// 2分探索により祝日を抽出する
@@ -90,7 +68,6 @@ func Between(start, end time.Time) []model.Holiday {
 	i := startIndex
 	for i < mappingLen {
 		day := mapping[i]
-		//fmt.Printf("day: %d, end: %d\n", day, epochEndDay)
 		if day.Day > epochEndDay {
 			break
 		}
