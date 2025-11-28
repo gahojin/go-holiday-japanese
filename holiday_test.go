@@ -34,21 +34,29 @@ var (
 )
 
 func BenchmarkIsHoliday(b *testing.B) {
-	IsHoliday(t20241014)
-	IsHoliday(t20241015)
+	for i := 0; i < b.N; i++ {
+		IsHoliday(t20241014)
+		IsHoliday(t20241015)
+	}
 }
 
 func BenchmarkIsHolidayHolidayJp(b *testing.B) {
-	holidayjp.IsHoliday(t20241014)
-	holidayjp.IsHoliday(t20241015)
+	for i := 0; i < b.N; i++ {
+		holidayjp.IsHoliday(t20241014)
+		holidayjp.IsHoliday(t20241015)
+	}
 }
 
 func BenchmarkBetween(b *testing.B) {
-	Between(t20200101, t20201231)
+	for i := 0; i < b.N; i++ {
+		Between(t20200101, t20201231)
+	}
 }
 
 func BenchmarkBetweenHolidayJp(b *testing.B) {
-	holidayjp.Between(t20200101, t20201231)
+	for i := 0; i < b.N; i++ {
+		holidayjp.Between(t20200101, t20201231)
+	}
 }
 
 func TestIsHoliday(t *testing.T) {
