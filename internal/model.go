@@ -1,53 +1,27 @@
 package internal
 
-import (
-	"fmt"
-)
-
-type StoreMapping struct {
-	Diff  uint8
-	Index uint8
-}
-
-type StoreData struct {
-	Names   []string
-	Mapping []StoreMapping
-}
-
 type Mapping struct {
 	Day   uint
 	Index int
 }
 
-type ParsedData struct {
-	Names    []string
-	Holidays map[uint]int
-	Mapping  []Mapping
-}
-
-func ConvertDataset(names []string, mappings []StoreMapping) (*ParsedData, error) {
-	namesLen := len(names)
-	mappingLen := len(mappings)
+func ConvertDataset(mappings string) (map[uint]int, []Mapping) {
+	mappingLen := len(mappings) >> 1
 	results := make([]Mapping, mappingLen)
 	holidays := make(map[uint]int, mappingLen)
 	day := uint(0)
-	for i, mapping := range mappings {
-		index := int(mapping.Index)
-		// 名称インデックスのチェック
-		if index >= namesLen {
-			return nil, fmt.Errorf("invalid dataset. index overflow %d >= %d", index, namesLen)
-		}
+	j := 0
+	for i := 0; i < mappingLen; i++ {
+		day += uint(mappings[j])
+		j++
+		index := int(mappings[j])
+		j++
 
-		day += uint(mapping.Diff)
 		holidays[day] = index
 		results[i] = Mapping{
 			Day:   day,
 			Index: index,
 		}
 	}
-	return &ParsedData{
-		Names:    names,
-		Holidays: holidays,
-		Mapping:  results,
-	}, nil
+	return holidays, results
 }
