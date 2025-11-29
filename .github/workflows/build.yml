@@ -65,3 +65,7 @@ jobs:
 
       - name: Test
         run: go test
+
+      - name: Test Compatible
+        run: go test
+        working-directory: ./compatible
