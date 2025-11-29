@@ -2,10 +2,7 @@ module github.com/gahojin/go-holiday-japanese
 
 go 1.22
 
-toolchain go1.25.1
-
 require (
-	github.com/holiday-jp/holiday_jp-go v0.0.0-20220125203534-53124b4cc19c
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
 )
