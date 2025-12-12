@@ -1,6 +1,6 @@
 module github.com/gahojin/go-holiday-japanese
 
-go 1.22
+go 1.23
 
 require (
 	github.com/stretchr/testify v1.11.1
