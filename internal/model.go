@@ -11,7 +11,7 @@ func ConvertDataset(mappings string) (map[uint]int, []Mapping) {
 	holidays := make(map[uint]int, mappingLen)
 	day := uint(0)
 	j := 0
-	for i := 0; i < mappingLen; i++ {
+	for i := range mappingLen {
 		day += uint(mappings[j])
 		j++
 		index := int(mappings[j])
