@@ -25,3 +25,10 @@ pre-commit:
       skip:
         - merge
         - rebase
+    golangci-lint:
+      glob: "*.go"
+      run: mise exec -- golangci-lint run --new-from-rev=HEAD ./...
+      stage_fixed: true
+      skip:
+        - merge
+        - rebase
