@@ -14,11 +14,11 @@ var (
 	baseTime = time.Unix(0, 0).In(time.UTC)
 )
 
-func FromEpochDay(epochDay uint) time.Time {
+func FromEpochDay(epochDay uint32) time.Time {
 	return baseTime.Add(time.Duration(epochDay) * dayDuration)
 }
 
-func ToEpochDay(date time.Time) (uint, bool) {
+func ToEpochDay(date time.Time) (uint32, bool) {
 	// UTC時間に変換する
 	year, month, day := date.Date()
 	targetTime := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
@@ -27,6 +27,6 @@ func ToEpochDay(date time.Time) (uint, bool) {
 	}
 
 	// 差分を計算し、日数を算出
-	diff := targetTime.Sub(baseTime)
-	return uint(diff / dayDuration), true
+	diff := targetTime.Sub(baseTime).Hours() / 24
+	return uint32(diff), true
 }
