@@ -3,9 +3,8 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -34,38 +33,40 @@ type storeData struct {
 	Mapping []storeMapping
 }
 
+var (
+	datasetTemplate = template.Must(template.ParseFiles(filepath.Join("dataset.tpl")))
+
+	srcFile = filepath.Join("..", "dataset", "holidays_detailed.yml")
+	outFile = filepath.Join("..", "dataset.go")
+)
+
 func main() {
-	src := filepath.Join("..", "dataset", "holidays_detailed.yml")
-	out := filepath.Join("..", "dataset.go")
-
-	dataset, err := parse(src)
+	dataset, err := parse(srcFile)
 	if err != nil {
 		panic(err)
 	}
 
-	file, err := os.Create(out)
+	storeData, err := convert(dataset)
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
 
-	storeData := convert(dataset)
-
-	if err = generate(storeData, file); err != nil {
+	if err = generate(storeData, outFile); err != nil {
 		panic(err)
 	}
 }
 
 // parse はYAMLファイルを読み込み、祝日情報を返す
 func parse(filename string) ([]HolidayDetail, error) {
-	file, err := os.Open(filename)
+	file, err := os.ReadFile(filepath.Clean(filename))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
-	defer file.Close()
+
+	buf := bytes.NewBuffer(file)
 
 	var dataset Holidays
-	if err := yaml.NewDecoder(file).Decode(&dataset); err != nil {
+	if err := yaml.NewDecoder(buf).Decode(&dataset); err != nil {
 		return nil, fmt.Errorf("unmarshal: %w", err)
 	}
 	// mapの要素（値）のみを格納するスライス
@@ -86,23 +87,22 @@ func parse(filename string) ([]HolidayDetail, error) {
 }
 
 // generate code from template and master data.
-func generate(data *storeData, w io.Writer) error {
-	writer := bufio.NewWriter(w)
-	defer writer.Flush()
-
-	tmpl, err := template.ParseFiles("dataset.tpl")
+func generate(data *storeData, filename string) (err error) {
+	buf := new(bytes.Buffer)
+	err = datasetTemplate.Execute(buf, data)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to execute template: %w", err)
 	}
-	return tmpl.Execute(writer, data)
+
+	return os.WriteFile(filename, buf.Bytes(), 0600)
 }
 
-func convert(dataset []HolidayDetail) *storeData {
+func convert(dataset []HolidayDetail) (*storeData, error) {
 	nameToIndexMap := make(map[string]uint8)
 	names := make([]string, 0)
 	mapping := make([]storeMapping, 0, len(dataset))
 
-	prevDay := uint(0)
+	prevDay := uint32(0)
 	for _, info := range dataset {
 		date := info.Date
 		nameJa := info.Name
@@ -121,9 +121,10 @@ func convert(dataset []HolidayDetail) *storeData {
 		}
 		epochDay, ok := internal.ToEpochDay(date)
 		if !ok {
-			panic(fmt.Sprintf("invalid date: %v", date))
+			return nil, fmt.Errorf("failed to convert date to epoch day: %s", date)
 		}
 		diff := epochDay - prevDay
+		// TODO: diffのoverflowチェックがない
 		prevDay = epochDay
 		mapping = append(mapping, storeMapping{Diff: uint8(diff), Index: index})
 	}
@@ -131,5 +132,5 @@ func convert(dataset []HolidayDetail) *storeData {
 	return &storeData{
 		Names:   names,
 		Mapping: mapping,
-	}
+	}, nil
 }
