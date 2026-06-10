@@ -124,7 +124,9 @@ func convert(dataset []HolidayDetail) (*storeData, error) {
 			return nil, fmt.Errorf("failed to convert date to epoch day: %s", date)
 		}
 		diff := epochDay - prevDay
-		// TODO: diffのoverflowチェックがない
+		if diff > 255 {
+			return nil, fmt.Errorf("failed to convert date to epoch day: %s, diff: %d", date, diff)
+		}
 		prevDay = epochDay
 		mapping = append(mapping, storeMapping{Diff: uint8(diff), Index: index})
 	}
