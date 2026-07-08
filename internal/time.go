@@ -27,6 +27,6 @@ func ToEpochDay(date time.Time) (uint32, bool) {
 	}
 
 	// 差分を計算し、日数を算出
-	diff := targetTime.Sub(baseTime).Hours() / 24
+	diff := targetTime.Sub(baseTime) / (24 * time.Hour)
 	return uint32(diff), true
 }

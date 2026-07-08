@@ -54,7 +54,7 @@ func Between(start, end time.Time) []model.Holiday {
 	startIndex := high + 1
 
 	for low <= high {
-		mid := (low + high) >> 1
+		mid := low + ((high - low) >> 1)
 		currentDay := mapping[mid]
 		if currentDay.Day < epochStartDay {
 			low = mid + 1
@@ -64,7 +64,18 @@ func Between(start, end time.Time) []model.Holiday {
 		}
 	}
 
-	ret := make([]model.Holiday, 0)
+	// あらかじめ確保するサイズを算出し，メモリ最適化する
+	count := 0
+	if startIndex < mappingLen && epochEndDay >= epochStartDay {
+		// 期間（日数）からおおよその祝日数を推定する（年間約20日程度）
+		// 安全のため少し多めに（15日で1日以上ある計算）する
+		days := epochEndDay - epochStartDay + 1
+		count = int(days/15) + 2
+		// ただし、残りの全データ数よりは大きくしない
+		count = min(count, mappingLen-startIndex)
+	}
+
+	ret := make([]model.Holiday, 0, count)
 	i := startIndex
 	for i < mappingLen {
 		day := mapping[i]

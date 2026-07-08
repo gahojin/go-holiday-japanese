@@ -20,6 +20,7 @@ var (
 	t20240301, _ = time.Parse(time.DateOnly, "2024-03-01")
 	t19700101, _ = time.Parse(time.DateOnly, "1970-01-01")
 	t19700115, _ = time.Parse(time.DateOnly, "1970-01-15")
+	t19691231, _ = time.Parse(time.DateOnly, "1969-12-31")
 
 	tokyoLoc, _      = time.LoadLocation("Asia/Tokyo")
 	newYorkLoc, _    = time.LoadLocation("America/New_York")
@@ -72,6 +73,9 @@ func TestIsHoliday(t *testing.T) {
 			}
 			// 山の日 (振替休日)
 			assert.True(t, IsHoliday(time.Date(2021, 8, 9, 0, 0, 0, 0, tt.tz)))
+
+			// 1970-01-01 より前の日付
+			assert.False(t, IsHoliday(time.Date(1969, 12, 31, 23, 59, 59, 0, tt.tz)))
 		})
 	}
 }
@@ -102,10 +106,29 @@ func TestGetHolidayName(t *testing.T) {
 			day:       14,
 			holidayJa: "スポーツの日",
 		},
+		{
+			name:      "祝日ではない日",
+			year:      2025,
+			month:     1,
+			day:       2,
+			holidayJa: "",
+		},
+		{
+			name:      "1970-01-01より前の日付",
+			year:      1969,
+			month:     12,
+			day:       31,
+			holidayJa: "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s: 祝日名があっていること", tt.name), func(t *testing.T) {
-			assert.Equal(t, GetHolidayName(time.Date(tt.year, time.Month(tt.month), tt.day, 0, 0, 0, 0, time.UTC)).Ja, tt.holidayJa)
+			name := GetHolidayName(time.Date(tt.year, time.Month(tt.month), tt.day, 0, 0, 0, 0, time.UTC))
+			if tt.holidayJa == "" {
+				assert.Nil(t, name)
+			} else {
+				assert.Equal(t, tt.holidayJa, name.Ja)
+			}
 		})
 	}
 }
@@ -130,4 +153,19 @@ func TestBetween(t *testing.T) {
 		{Date: t19700115, Name: model.Name{Ja: "成人の日", En: "Coming of Age Day"}},
 	}, Between(t19700101, t19700115))
 	assert.Empty(t, Between(t20240230, t20240301))
+
+	// start > end
+	assert.Empty(t, Between(t20250131, t20250101))
+
+	// 1970-01-01 より前を含む
+	assert.Empty(t, Between(t19691231, t19691231))
+	// ToEpochDay が false を返すため nil になる
+	assert.Nil(t, Between(t19691231, t19700101))
+
+	// 10個以上の祝日が含まれるケース (capacity 計算の確認)
+	t20251231, _ := time.Parse(time.DateOnly, "2025-12-31")
+	assert.GreaterOrEqual(t, len(Between(t20250101, t20251231)), 10)
+
+	// 終了日が 1970-01-01 より前のケース
+	assert.Nil(t, Between(t20250101, t19691231))
 }

@@ -6,6 +6,48 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/gahojin/go-holiday-japanese)](https://goreportcard.com/report/github.com/gahojin/go-holiday-japanese)
 [![License](https://img.shields.io/github/license/gahojin/go-holiday-japanese)](LICENSE)
 
+## 使い方
+
+### インストール
+
+```bash
+go get github.com/gahojin/go-holiday-japanese
+```
+
+### サンプルコード
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/gahojin/go-holiday-japanese"
+)
+
+func main() {
+	// 祝日かどうかの判定
+	t := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	if holiday.IsHoliday(t) {
+		fmt.Println("今日は祝日です")
+	}
+
+	// 祝日名の取得
+	if name := holiday.GetHolidayName(t); name != nil {
+		fmt.Printf("祝日名: %s (%s)\n", name.Ja, name.En)
+	}
+
+	// 期間内の祝日一覧を取得
+	start := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	end := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+	holidays := holiday.Between(start, end)
+	for _, h := range holidays {
+		fmt.Printf("%s: %s\n", h.Date.Format("2006-01-02"), h.Name.Ja)
+	}
+}
+```
+
 ## ライセンス
 
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
