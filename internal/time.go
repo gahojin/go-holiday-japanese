@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"math"
 	"time"
 )
 
@@ -22,11 +23,11 @@ func ToEpochDay(date time.Time) (uint32, bool) {
 	// UTC時間に変換する
 	year, month, day := date.Date()
 	targetTime := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
-	if targetTime.Before(baseTime) {
-		return 0, false
-	}
 
 	// 差分を計算し、日数を算出
-	diff := targetTime.Sub(baseTime) / (24 * time.Hour)
+	diff := targetTime.Sub(baseTime) / dayDuration
+	if diff < 0 || diff > math.MaxUint32 {
+		return 0, false
+	}
 	return uint32(diff), true
 }
