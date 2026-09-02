@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gahojin/go-holiday-japanese/internal"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 type HolidayDetail struct {
