@@ -1,7 +1,9 @@
-package holiday
+package internal
 
-var holidayNames = []string{
+var HolidayNames = []string{
 {{ range $name := .Names }}	"{{ $name }}",
 {{ end }}}
 
-const holidayMapping = "{{ range $mapping := .Mapping}}\x{{ printf "%02x" $mapping.Diff }}\x{{ printf "%02x" $mapping.Index }}{{end}}"
+const HolidayMapping = "{{ range $mapping := .Mapping}}\x{{ printf "%02x" $mapping.Diff }}\x{{ printf "%02x" $mapping.Index }}{{end}}"
+
+const EpochDayMax = {{ .EpochDayMax }}

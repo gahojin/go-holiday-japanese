@@ -9,7 +9,7 @@ import (
 
 func TestFromEpochDay(t *testing.T) {
 	tests := []struct {
-		epochDay uint32
+		epochDay uint16
 		expected time.Time
 	}{
 		{0, time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)},
@@ -24,7 +24,7 @@ func TestFromEpochDay(t *testing.T) {
 func TestToEpochDay(t *testing.T) {
 	tests := []struct {
 		date     time.Time
-		expected uint32
+		expected uint16
 		ok       bool
 	}{
 		{time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC), 0, true},
@@ -47,15 +47,14 @@ func TestConvertDataset(t *testing.T) {
 	// \x01\x00 -> day += 1, index = 0
 	// \x02\x02 -> day += 2, index = 2 (day = 1+2=3)
 	mapping := "\x01\x00\x02\x02"
-	holidays, results := ConvertDataset(mapping)
+	bitset, results := ConvertDataset(mapping)
 
-	assert.Len(t, holidays, 2)
-	assert.Equal(t, uint8(0), holidays[1])
-	assert.Equal(t, uint8(2), holidays[3])
+	assert.True(t, bitset.Has(1))
+	assert.True(t, bitset.Has(3))
 
 	assert.Len(t, results, 2)
-	assert.Equal(t, uint32(1), results[0].Day)
+	assert.Equal(t, uint16(1), results[0].Day)
 	assert.Equal(t, uint8(0), results[0].Index)
-	assert.Equal(t, uint32(3), results[1].Day)
+	assert.Equal(t, uint16(3), results[1].Day)
 	assert.Equal(t, uint8(2), results[1].Index)
 }

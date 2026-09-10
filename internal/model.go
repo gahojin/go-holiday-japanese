@@ -1,27 +1,50 @@
 package internal
 
 type Mapping struct {
-	Day   uint32
+	Day   uint16
 	Index uint8
 }
 
-func ConvertDataset(mappings string) (map[uint32]uint8, []Mapping) {
+type Bitset []byte
+
+func ConvertDataset(mappings string) (Bitset, []Mapping) {
 	mappingLen := len(mappings) >> 1
 	results := make([]Mapping, mappingLen)
-	holidays := make(map[uint32]uint8, mappingLen)
-	day := uint32(0)
+	day := uint16(0)
 	j := 0
 	for i := range mappingLen {
-		day += uint32(mappings[j])
+		day += uint16(mappings[j])
 		j++
 		index := mappings[j]
 		j++
 
-		holidays[day] = index
 		results[i] = Mapping{
 			Day:   day,
 			Index: index,
 		}
 	}
-	return holidays, results
+	return newBitset(results), results
+}
+
+func newBitset(mapping []Mapping) Bitset {
+	// js版と同じく、1bit=1日で保持する
+	var maxDay uint16
+	for _, m := range mapping {
+		if m.Day > maxDay {
+			maxDay = m.Day
+		}
+	}
+	b := make(Bitset, (maxDay>>3)+1)
+	for _, m := range mapping {
+		b[m.Day>>3] |= 1 << (m.Day & 7)
+	}
+	return b
+}
+
+func (b Bitset) Has(day uint16) bool {
+	idx := day >> 3
+	if int(idx) >= len(b) {
+		return false
+	}
+	return b[idx]&(1<<(day&7)) != 0
 }

@@ -2,13 +2,14 @@ package holiday
 
 import (
 	_ "embed"
+	"sort"
 	"time"
 
 	"github.com/gahojin/go-holiday-japanese/internal"
 	"github.com/gahojin/go-holiday-japanese/model"
 )
 
-var holidays, mapping = internal.ConvertDataset(holidayMapping)
+var holidayBitset, mapping = internal.ConvertDataset(internal.HolidayMapping)
 
 // IsHoliday は指定日が祝日か返す
 func IsHoliday(t time.Time) bool {
@@ -16,8 +17,7 @@ func IsHoliday(t time.Time) bool {
 	if !ok {
 		return false
 	}
-	_, ok = holidays[epochDay]
-	return ok
+	return holidayBitset.Has(epochDay)
 }
 
 // GetHolidayName は指定日の祝日名を返す
@@ -26,12 +26,21 @@ func GetHolidayName(t time.Time) *model.Name {
 	if !ok {
 		return nil
 	}
-	index, ok := holidays[epochDay]
-	if !ok {
+
+	mappingLen := len(mapping)
+	idx := sort.Search(mappingLen, func(i int) bool {
+		return mapping[i].Day >= epochDay
+	})
+	if idx >= mappingLen {
 		return nil
 	}
-	names := holidayNames
-	return &model.Name{Ja: names[index], En: names[index+1]}
+	data := mapping[idx]
+	if data.Day != epochDay {
+		return nil
+	}
+	index := data.Index
+	names := internal.HolidayNames
+	return &model.Name{Ja: internal.HolidayNames[index], En: names[index+1]}
 }
 
 // Between は期間内の祝日情報を返す
@@ -45,51 +54,35 @@ func Between(start, end time.Time) []model.Holiday {
 		return nil
 	}
 
-	names := holidayNames
+	names := internal.HolidayNames
 	mappingLen := len(mapping)
 
 	// 2分探索により祝日を抽出する
-	low := 0
-	high := mappingLen - 1
-	startIndex := high + 1
-
-	for low <= high {
-		mid := low + ((high - low) >> 1)
-		currentDay := mapping[mid]
-		if currentDay.Day < epochStartDay {
-			low = mid + 1
-		} else {
-			startIndex = mid
-			high = mid - 1
-		}
-	}
+	startIndex := sort.Search(mappingLen, func(i int) bool {
+		return mapping[i].Day >= epochStartDay
+	})
+	endIndex := sort.Search(mappingLen, func(i int) bool {
+		return mapping[i].Day > epochEndDay
+	})
 
 	// あらかじめ確保するサイズを算出し，メモリ最適化する
-	count := 0
-	if startIndex < mappingLen && epochEndDay >= epochStartDay {
-		// 期間（日数）からおおよその祝日数を推定する（年間約20日程度）
-		// 安全のため少し多めに（15日で1日以上ある計算）する
-		days := epochEndDay - epochStartDay + 1
-		count = int(days/15) + 2
-		// ただし、残りの全データ数よりは大きくしない
-		count = min(count, mappingLen-startIndex)
+	count := endIndex - startIndex
+	if count <= 0 {
+		return []model.Holiday{}
 	}
+	ret := make([]model.Holiday, count)
 
-	ret := make([]model.Holiday, 0, count)
-	i := startIndex
-	for i < mappingLen {
+	j := 0
+	for i := startIndex; i < endIndex; i++ {
 		day := mapping[i]
-		if day.Day > epochEndDay {
-			break
-		}
-		ret = append(ret, model.Holiday{
+		ret[j] = model.Holiday{
 			Date: internal.FromEpochDay(day.Day),
 			Name: model.Name{
 				Ja: names[day.Index],
 				En: names[day.Index+1],
 			},
-		})
-		i++
+		}
+		j++
 	}
 	return ret
 }
