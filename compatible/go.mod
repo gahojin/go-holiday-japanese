@@ -1,6 +1,6 @@
 module compatible
 
-go 1.23
+go 1.25
 
 replace github.com/gahojin/go-holiday-japanese => ../
 

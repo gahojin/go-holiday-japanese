@@ -48,6 +48,19 @@ func main() {
 }
 ```
 
+## パフォーマンス
+
+```text
+goos: darwin
+goarch: arm64
+pkg: compatible
+cpu: Apple M4
+BenchmarkIsHoliday-10                   26755888                44.73 ns/op
+BenchmarkIsHolidayHolidayJp-10           5885756               197.8 ns/op
+BenchmarkBetween-10                      4188126               286.7 ns/op
+BenchmarkBetweenHolidayJp-10               25216             47566 ns/op
+```
+
 ## ライセンス
 
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
