@@ -55,10 +55,10 @@ goos: darwin
 goarch: arm64
 pkg: compatible
 cpu: Apple M4
-BenchmarkIsHoliday-10                   26755888                44.73 ns/op
-BenchmarkIsHolidayHolidayJp-10           5885756               197.8 ns/op
-BenchmarkBetween-10                      4188126               286.7 ns/op
-BenchmarkBetweenHolidayJp-10               25216             47566 ns/op
+BenchmarkIsHoliday-10                   27455172                43.68 ns/op            0 B/op          0 allocs/op
+BenchmarkIsHolidayHolidayJp-10           6235531               191.9 ns/op            48 B/op          4 allocs/op
+BenchmarkBetween-10                      4184719               287.1 ns/op          1536 B/op          1 allocs/op
+BenchmarkBetweenHolidayJp-10               25275             48041 ns/op           18929 B/op       1453 allocs/op
 ```
 
 ## ライセンス
