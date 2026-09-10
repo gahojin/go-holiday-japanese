@@ -29,15 +29,16 @@ type storeMapping struct {
 }
 
 type storeData struct {
-	Names   []string
-	Mapping []storeMapping
+	Names       []string
+	Mapping     []storeMapping
+	EpochDayMax uint16
 }
 
 var (
 	datasetTemplate = template.Must(template.ParseFiles(filepath.Join("dataset.tpl")))
 
 	srcFile = filepath.Join("..", "dataset", "holidays_detailed.yml")
-	outFile = filepath.Join("..", "dataset.go")
+	outFile = filepath.Join("..", "internal", "dataset.go")
 )
 
 func main() {
@@ -102,7 +103,7 @@ func convert(dataset []HolidayDetail) (*storeData, error) {
 	names := make([]string, 0)
 	mapping := make([]storeMapping, 0, len(dataset))
 
-	prevDay := uint32(0)
+	prevDay := uint16(0)
 	for _, info := range dataset {
 		date := info.Date
 		nameJa := info.Name
@@ -132,7 +133,8 @@ func convert(dataset []HolidayDetail) (*storeData, error) {
 	}
 
 	return &storeData{
-		Names:   names,
-		Mapping: mapping,
+		Names:       names,
+		Mapping:     mapping,
+		EpochDayMax: prevDay,
 	}, nil
 }
